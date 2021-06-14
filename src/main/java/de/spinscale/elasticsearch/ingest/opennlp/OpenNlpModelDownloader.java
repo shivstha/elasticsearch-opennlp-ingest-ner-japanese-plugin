@@ -60,7 +60,7 @@ public class OpenNlpModelDownloader extends EnvironmentAwareCommand {
         if (Files.exists(filename)) {
             terminal.println("not downloading, existed already.");
         } else {
-            File initialFile = new File("model/rondhuit-ja-ner-model.bin");
+            File initialFile = new File("C:\\model\\rondhuit-ja-ner-model.bin");
             try (InputStream inputStream = new FileInputStream(initialFile)) {
                 Files.copy(inputStream, filename);
             }
