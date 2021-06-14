@@ -1,95 +1,14 @@
-# Elasticsearch OpenNLP Ingest Processor
+# Elasticsearch OpenNLP Ingest Processor for Japanese Language
 
-I wrote a [opennlp mapping plugin](https://github.com/spinscale/elasticsearch-opennlp-plugin) a couple of years ago and people asked me, why I did not update it. The main reason was, that it was a bad architectural choice as mentioned in the [openlp plugin README](https://github.com/spinscale/elasticsearch-opennlp-plugin#elasticsearch-opennlp-plugin). With the introduction of ingest processors in Elasticsearch 5.0 this problem has been resolved.
+This elasticsearch ingest plugin uses rondhuit model developed by [RONDHUIT Co, Ltd.](https://www.rondhuit.com/) for Named Entity Recognition of Japanese Language. This plugin is also attached with [Kuromoji Analyzer](https://www.elastic.co/guide/en/elasticsearch/plugins/current/analysis-kuromoji-analyzer.html) the built-in plugin of elasticsearch for tokenizing Japenese words.
 
-This processor is doing named/date/location/'whatever you have a model for' entity recognition and stores the output in the JSON before it is being stored.
+This rondhuit model supports entity recoginition like ACCESS,LANGUAGE,PERSON,ORGANIZATION,LOCATION,DATETIME,EVENT,TITLE and stores the output in the JSON before it is being stored.
 
-This plugin is also intended to show you, that using gradle as a build system makes it very easy to reuse the testing facilities that elasticsearch already provides. First, you can run regular tests, but by adding a rest test, the plugin will be packaged and unzipped against elasticsearch, allowing you to execute a real end-to-end test, by just adding a java test class.
 
 ## Installation
 
-| ES    | Command |
-| ----- | ------- |
-| 7.13.0 | `bin/elasticsearch-plugin install https://github.com/spinscale/elasticsearch-ingest-opennlp/releases/download/7.13.0.1/ingest-opennlp-7.13.0.1.zip` |
-| 7.12.1 | `bin/elasticsearch-plugin install https://github.com/spinscale/elasticsearch-ingest-opennlp/releases/download/7.12.1.1/ingest-opennlp-7.12.1.1.zip` |
-| 7.12.0 | `bin/elasticsearch-plugin install https://github.com/spinscale/elasticsearch-ingest-opennlp/releases/download/7.12.0.1/ingest-opennlp-7.12.0.1.zip` |
-| 7.11.2 | `bin/elasticsearch-plugin install https://github.com/spinscale/elasticsearch-ingest-opennlp/releases/download/7.11.2.1/ingest-opennlp-7.11.2.1.zip` |
-| 7.11.1 | `bin/elasticsearch-plugin install https://github.com/spinscale/elasticsearch-ingest-opennlp/releases/download/7.11.1.1/ingest-opennlp-7.11.1.1.zip` |
-| 7.11.0 | No release due to issues with Elasticsearch dependencies |
-| 7.10.2 | `bin/elasticsearch-plugin install https://github.com/spinscale/elasticsearch-ingest-opennlp/releases/download/7.10.2.1/ingest-opennlp-7.10.2.1.zip` |
-| 7.10.1 | `bin/elasticsearch-plugin install https://github.com/spinscale/elasticsearch-ingest-opennlp/releases/download/7.10.1.1/ingest-opennlp-7.10.1.1.zip` |
-| 7.10.0 | `bin/elasticsearch-plugin install https://github.com/spinscale/elasticsearch-ingest-opennlp/releases/download/7.10.0.1/ingest-opennlp-7.10.0.1.zip` |
-| 7.9.3 | `bin/elasticsearch-plugin install https://github.com/spinscale/elasticsearch-ingest-opennlp/releases/download/7.9.3.1/ingest-opennlp-7.9.3.1.zip` |
-| 7.9.2 | `bin/elasticsearch-plugin install https://github.com/spinscale/elasticsearch-ingest-opennlp/releases/download/7.9.2.1/ingest-opennlp-7.9.2.1.zip` |
-| 7.9.1 | `bin/elasticsearch-plugin install https://github.com/spinscale/elasticsearch-ingest-opennlp/releases/download/7.9.1.1/ingest-opennlp-7.9.1.1.zip` |
-| 7.9.0 | `bin/elasticsearch-plugin install https://github.com/spinscale/elasticsearch-ingest-opennlp/releases/download/7.9.0.1/ingest-opennlp-7.9.0.1.zip` |
-| 7.8.1 | `bin/elasticsearch-plugin install https://github.com/spinscale/elasticsearch-ingest-opennlp/releases/download/7.8.1.1/ingest-opennlp-7.8.1.1.zip` |
-| 7.8.0 | `bin/elasticsearch-plugin install https://github.com/spinscale/elasticsearch-ingest-opennlp/releases/download/7.8.0.1/ingest-opennlp-7.8.0.1.zip` |
-| 7.7.1 | `bin/elasticsearch-plugin install https://github.com/spinscale/elasticsearch-ingest-opennlp/releases/download/7.7.1.1/ingest-opennlp-7.7.1.1.zip` |
-| 7.7.0 | `bin/elasticsearch-plugin install https://github.com/spinscale/elasticsearch-ingest-opennlp/releases/download/7.7.0.1/ingest-opennlp-7.7.0.1.zip` |
-| 7.6.2 | `bin/elasticsearch-plugin install https://github.com/spinscale/elasticsearch-ingest-opennlp/releases/download/7.6.2.1/ingest-opennlp-7.6.2.1.zip` |
-| 7.6.1 | `bin/elasticsearch-plugin install https://github.com/spinscale/elasticsearch-ingest-opennlp/releases/download/7.6.1.1/ingest-opennlp-7.6.1.1.zip` |
-| 7.6.0 | `bin/elasticsearch-plugin install https://github.com/spinscale/elasticsearch-ingest-opennlp/releases/download/7.6.0.1/ingest-opennlp-7.6.0.1.zip` |
-| 7.5.2 | `bin/elasticsearch-plugin install https://github.com/spinscale/elasticsearch-ingest-opennlp/releases/download/7.5.2.1/ingest-opennlp-7.5.2.1.zip` |
-| 7.5.1 | `bin/elasticsearch-plugin install https://github.com/spinscale/elasticsearch-ingest-opennlp/releases/download/7.5.1.1/ingest-opennlp-7.5.1.1.zip` |
-| 7.5.0 | `bin/elasticsearch-plugin install https://github.com/spinscale/elasticsearch-ingest-opennlp/releases/download/7.5.0.1/ingest-opennlp-7.5.0.1.zip` |
-| 7.4.2 | `bin/elasticsearch-plugin install https://github.com/spinscale/elasticsearch-ingest-opennlp/releases/download/7.4.2.1/ingest-opennlp-7.4.2.1.zip` |
-| 7.4.1 | `bin/elasticsearch-plugin install https://github.com/spinscale/elasticsearch-ingest-opennlp/releases/download/7.4.1.1/ingest-opennlp-7.4.1.1.zip` |
-| 7.4.0 | `bin/elasticsearch-plugin install https://github.com/spinscale/elasticsearch-ingest-opennlp/releases/download/7.4.0.1/ingest-opennlp-7.4.0.1.zip` |
-| 7.3.2 | `bin/elasticsearch-plugin install https://github.com/spinscale/elasticsearch-ingest-opennlp/releases/download/7.3.2.1/ingest-opennlp-7.3.2.1.zip` |
-| 7.3.1 | `bin/elasticsearch-plugin install https://github.com/spinscale/elasticsearch-ingest-opennlp/releases/download/7.3.1.1/ingest-opennlp-7.3.1.1.zip` |
-| 7.3.0 | `bin/elasticsearch-plugin install https://github.com/spinscale/elasticsearch-ingest-opennlp/releases/download/7.3.0.1/ingest-opennlp-7.3.0.1.zip` |
-| 7.2.1 | `bin/elasticsearch-plugin install https://github.com/spinscale/elasticsearch-ingest-opennlp/releases/download/7.2.1.1/ingest-opennlp-7.2.1.1.zip` |
-| 7.2.0 | `bin/elasticsearch-plugin install https://github.com/spinscale/elasticsearch-ingest-opennlp/releases/download/7.2.0.1/ingest-opennlp-7.2.0.1.zip` |
-| 7.1.1 | `bin/elasticsearch-plugin install https://github.com/spinscale/elasticsearch-ingest-opennlp/releases/download/7.1.1.1/ingest-opennlp-7.1.1.1.zip` |
-| 7.1.0 | `bin/elasticsearch-plugin install https://github.com/spinscale/elasticsearch-ingest-opennlp/releases/download/7.1.0.1/ingest-opennlp-7.1.0.1.zip` |
-| 7.0.1 | `bin/elasticsearch-plugin install https://github.com/spinscale/elasticsearch-ingest-opennlp/releases/download/7.0.1.1/ingest-opennlp-7.0.1.1.zip` |
-| 7.0.0 | `bin/elasticsearch-plugin install https://github.com/spinscale/elasticsearch-ingest-opennlp/releases/download/7.0.0.1/ingest-opennlp-7.0.0.1.zip` |
-| 6.8.16| `bin/elasticsearch-plugin install https://github.com/spinscale/elasticsearch-ingest-opennlp/releases/download/6.8.16.1/ingest-opennlp-6.8.16.1.zip` |
-| 6.8.15| `bin/elasticsearch-plugin install https://github.com/spinscale/elasticsearch-ingest-opennlp/releases/download/6.8.15.1/ingest-opennlp-6.8.15.1.zip` |
-| 6.8.14| `bin/elasticsearch-plugin install https://github.com/spinscale/elasticsearch-ingest-opennlp/releases/download/6.8.14.1/ingest-opennlp-6.8.14.1.zip` |
-| 6.8.13| `bin/elasticsearch-plugin install https://github.com/spinscale/elasticsearch-ingest-opennlp/releases/download/6.8.13.1/ingest-opennlp-6.8.13.1.zip` |
-| 6.8.12| `bin/elasticsearch-plugin install https://github.com/spinscale/elasticsearch-ingest-opennlp/releases/download/6.8.12.1/ingest-opennlp-6.8.12.1.zip` |
-| 6.8.11| `bin/elasticsearch-plugin install https://github.com/spinscale/elasticsearch-ingest-opennlp/releases/download/6.8.11.1/ingest-opennlp-6.8.11.1.zip` |
-| 6.8.10| `bin/elasticsearch-plugin install https://github.com/spinscale/elasticsearch-ingest-opennlp/releases/download/6.8.10.1/ingest-opennlp-6.8.10.1.zip` |
-| 6.8.9 | `bin/elasticsearch-plugin install https://github.com/spinscale/elasticsearch-ingest-opennlp/releases/download/6.8.9.1/ingest-opennlp-6.8.9.1.zip` |
-| 6.8.8 | `bin/elasticsearch-plugin install https://github.com/spinscale/elasticsearch-ingest-opennlp/releases/download/6.8.8.1/ingest-opennlp-6.8.8.1.zip` |
-| 6.8.7 | `bin/elasticsearch-plugin install https://github.com/spinscale/elasticsearch-ingest-opennlp/releases/download/6.8.7.1/ingest-opennlp-6.8.7.1.zip` |
-| 6.8.6 | `bin/elasticsearch-plugin install https://github.com/spinscale/elasticsearch-ingest-opennlp/releases/download/6.8.6.1/ingest-opennlp-6.8.6.1.zip` |
-| 6.8.5 | `bin/elasticsearch-plugin install https://github.com/spinscale/elasticsearch-ingest-opennlp/releases/download/6.8.5.1/ingest-opennlp-6.8.5.1.zip` |
-| 6.8.4 | `bin/elasticsearch-plugin install https://github.com/spinscale/elasticsearch-ingest-opennlp/releases/download/6.8.4.1/ingest-opennlp-6.8.4.1.zip` |
-| 6.8.3 | `bin/elasticsearch-plugin install https://github.com/spinscale/elasticsearch-ingest-opennlp/releases/download/6.8.3.1/ingest-opennlp-6.8.3.1.zip` |
-| 6.8.2 | `bin/elasticsearch-plugin install https://github.com/spinscale/elasticsearch-ingest-opennlp/releases/download/6.8.2.1/ingest-opennlp-6.8.2.1.zip` |
-| 6.8.1 | `bin/elasticsearch-plugin install https://github.com/spinscale/elasticsearch-ingest-opennlp/releases/download/6.8.1.1/ingest-opennlp-6.8.1.1.zip` |
-| 6.8.0 | `bin/elasticsearch-plugin install https://github.com/spinscale/elasticsearch-ingest-opennlp/releases/download/6.8.0.1/ingest-opennlp-6.8.0.1.zip` |
-| 6.7.2 | `bin/elasticsearch-plugin install https://github.com/spinscale/elasticsearch-ingest-opennlp/releases/download/6.7.2.1/ingest-opennlp-6.7.2.1.zip` |
-| 6.7.1 | `bin/elasticsearch-plugin install https://github.com/spinscale/elasticsearch-ingest-opennlp/releases/download/6.7.1.1/ingest-opennlp-6.7.1.1.zip` |
-| 6.7.0 | `bin/elasticsearch-plugin install https://github.com/spinscale/elasticsearch-ingest-opennlp/releases/download/6.7.0.1/ingest-opennlp-6.7.0.1.zip` |
-| 6.6.2 | `bin/elasticsearch-plugin install https://github.com/spinscale/elasticsearch-ingest-opennlp/releases/download/6.6.2.1/ingest-opennlp-6.6.2.1.zip` |
-| 6.6.1 | `bin/elasticsearch-plugin install https://github.com/spinscale/elasticsearch-ingest-opennlp/releases/download/6.6.1.1/ingest-opennlp-6.6.1.1.zip` |
-| 6.6.0 | `bin/elasticsearch-plugin install https://github.com/spinscale/elasticsearch-ingest-opennlp/releases/download/6.6.0.1/ingest-opennlp-6.6.0.1.zip` |
-| 6.5.4 | `bin/elasticsearch-plugin install https://github.com/spinscale/elasticsearch-ingest-opennlp/releases/download/6.5.4.1/ingest-opennlp-6.5.4.1.zip` |
-| 6.5.3 | `bin/elasticsearch-plugin install https://github.com/spinscale/elasticsearch-ingest-opennlp/releases/download/6.5.3.1/ingest-opennlp-6.5.3.1.zip` |
-| 6.5.2 | `bin/elasticsearch-plugin install https://github.com/spinscale/elasticsearch-ingest-opennlp/releases/download/6.5.2.1/ingest-opennlp-6.5.2.1.zip` |
-| 6.5.1 | `bin/elasticsearch-plugin install https://github.com/spinscale/elasticsearch-ingest-opennlp/releases/download/6.5.1.1/ingest-opennlp-6.5.1.1.zip` |
-| 6.5.0 | `bin/elasticsearch-plugin install https://github.com/spinscale/elasticsearch-ingest-opennlp/releases/download/6.5.0.1/ingest-opennlp-6.5.0.1.zip` |
-| 6.4.3 | `bin/elasticsearch-plugin install https://github.com/spinscale/elasticsearch-ingest-opennlp/releases/download/6.4.3.1/ingest-opennlp-6.4.3.1.zip` |
-| 6.4.2 | `bin/elasticsearch-plugin install https://github.com/spinscale/elasticsearch-ingest-opennlp/releases/download/6.4.2.1/ingest-opennlp-6.4.2.1.zip` |
-| 6.4.1 | `bin/elasticsearch-plugin install https://github.com/spinscale/elasticsearch-ingest-opennlp/releases/download/6.4.1.1/ingest-opennlp-6.4.1.1.zip` |
-| 6.4.0 | `bin/elasticsearch-plugin install https://github.com/spinscale/elasticsearch-ingest-opennlp/releases/download/6.4.0.1/ingest-opennlp-6.4.0.1.zip` |
-| 6.3.2 | `bin/elasticsearch-plugin install https://github.com/spinscale/elasticsearch-ingest-opennlp/releases/download/6.3.2.1/ingest-opennlp-6.3.2.1.zip` |
-| 6.3.1 | `bin/elasticsearch-plugin install https://github.com/spinscale/elasticsearch-ingest-opennlp/releases/download/6.3.1.1/ingest-opennlp-6.3.1.1.zip` |
-| 6.3.0 | `bin/elasticsearch-plugin install https://github.com/spinscale/elasticsearch-ingest-opennlp/releases/download/6.3.0.1/ingest-opennlp-6.3.0.1.zip` |
-| 6.2.4 | `bin/elasticsearch-plugin install https://github.com/spinscale/elasticsearch-ingest-opennlp/releases/download/6.2.4.1/ingest-opennlp-6.2.4.1.zip` |
-| 6.2.3 | `bin/elasticsearch-plugin install https://github.com/spinscale/elasticsearch-ingest-opennlp/releases/download/6.2.3.1/ingest-opennlp-6.2.3.1.zip` |
-| 6.2.2 | `bin/elasticsearch-plugin install https://github.com/spinscale/elasticsearch-ingest-opennlp/releases/download/6.2.2.1/ingest-opennlp-6.2.2.1.zip` |
-| 5.2.0 | `bin/elasticsearch-plugin install https://oss.sonatype.org/content/repositories/releases/de/spinscale/elasticsearch/plugin/ingest/ingest-opennlp/5.2.0.1/ingest-opennlp-5.2.0.1.zip` |
-| 5.1.2 | `bin/elasticsearch-plugin install https://oss.sonatype.org/content/repositories/releases/de/spinscale/elasticsearch/plugin/ingest/ingest-opennlp/5.1.2.1/ingest-opennlp-5.1.2.1.zip` |
-| 5.1.1 | `bin/elasticsearch-plugin install https://oss.sonatype.org/content/repositories/releases/de/spinscale/elasticsearch/plugin/ingest/ingest-opennlp/5.1.1.1/ingest-opennlp-5.1.1.1.zip` |
 
-**IMPORTANT**: If you are running this plugin with Elasticsearch 6.5.2 or
-newer, you need to download the NER models from sourceforge after
-installation.
+**IMPORTANT**: This plugin is tested only in Elasticversion 7.13.0 . Make sure to install Elastiversion 7.13.0 if it doesnot install in your elasticsearch envrionment. 
 
 To download the models, run the following under Linux and osx (this is in
 the `bin` directory of your Elasticsearch installation)

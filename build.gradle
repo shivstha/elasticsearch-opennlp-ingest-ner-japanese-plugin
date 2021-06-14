@@ -1,0 +1,94 @@
+import java.nio.file.Files
+import de.undercouch.gradle.tasks.download.Download
+
+buildscript {
+  repositories {
+    mavenLocal()
+    mavenCentral()
+ }
+
+  dependencies {
+    classpath "org.elasticsearch.gradle:build-tools:${elasticsearchVersion}"
+
+  }
+}
+
+plugins {
+  id "de.undercouch.download" version "4.1.1"
+  // the old co.riiid.gradle is not gradle 7.0 compatible
+  id "com.github.humblerookie.gradle" version "0.4.4"
+  id "com.github.ben-manes.versions" version '0.33.0'
+  id 'de.thetaphi.forbiddenapis' version '3.1'
+}
+
+group = 'de.spinscale.elasticsearch.plugin.ingest'
+version = "${elasticsearchVersion}.1-SNAPSHOT"
+
+apply plugin: 'java'
+apply plugin: 'idea'
+apply plugin: 'elasticsearch.esplugin'
+apply plugin: 'elasticsearch.yaml-rest-test'
+apply plugin: 'elasticsearch.testclusters'
+
+// license of this project
+licenseFile = rootProject.file('LICENSE.txt')
+// copyright notices
+noticeFile = rootProject.file('NOTICE.txt')
+
+esplugin {
+  // license of the plugin, may be different than the above license
+  licenseFile rootProject.file('LICENSE.txt')
+  // copyright notices, may be different than the above notice
+  noticeFile rootProject.file('NOTICE.txt')
+  name 'ingest-opennlp'
+  description 'Ingest processor that uses OpenNLP for named entity extraction of Japanese Language'
+  classname 'de.spinscale.elasticsearch.ingest.opennlp.IngestOpenNlpPlugin'
+}
+
+githubRelease.doFirst {
+  if (!System.getProperty('GITHUB_TOKEN', '')) {
+    throw new Exception('Missing property GITHUB_TOKEN')
+  }
+
+  // check if zip file is there
+  assert file("build/distributions/ingest-opennlp-${version}.zip").exists()
+
+  // rename zip file
+  def currentVersion = version.replace('-SNAPSHOT', '')
+  def filename = "build/distributions/ingest-opennlp-${currentVersion}.zip"
+  Files.copy(file("build/distributions/ingest-opennlp-${version}.zip").toPath(), file(filename).toPath())
+
+  // configuration
+  github {
+    owner = 'spinscale'
+    repo = 'elasticsearch-ingest-opennlp'
+    token = System.getProperty('GITHUB_TOKEN')
+    tagName = currentVersion
+    assets = [ filename ]
+  }
+}
+
+// In this section you declare the dependencies for your production and test code
+// Elasticsearch dependency is included due to the build-tools, test-framework as well
+dependencies {
+  implementation 'org.apache.opennlp:opennlp-tools:1.9.3'
+  // the yaml tests require a log4j2 dependency, otherwise a dependency is thrown on startup
+  // yamlRestTestImplementation 'org.apache.logging.log4j:log4j-core:2.11.1'
+}
+
+
+// no need to validate pom, as we do not upload to sonatype
+validateElasticPom.enabled = false
+
+// exlude the models for forbidden API check
+forbiddenApis {
+  bundledSignatures = [ 'jdk-unsafe', 'jdk-deprecated', 'jdk-non-portable', 'jdk-reflection', 'jdk-internal', 'jdk-system-out' ]
+}
+
+// ignore javadoc errors for now
+tasks.withType(Javadoc) {
+  options.addStringOption('Xdoclint:none', '-quiet')
+}
+
+
+
