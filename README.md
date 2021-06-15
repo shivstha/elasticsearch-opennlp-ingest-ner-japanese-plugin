@@ -65,4 +65,4 @@ GET /my-index/_doc/1
 ```
 
 ## Output in Kibana
-[!Output of ingest plugin on japanese text](model/japanese-ner-results.png)
+[!Output of ingest plugin on japanese text](./model/japanese-ner-results.png)
