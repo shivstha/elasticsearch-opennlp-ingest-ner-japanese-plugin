@@ -65,4 +65,4 @@ GET /my-index/_doc/1
 ```
 
 ## Output in Kibana
-[!Output of ingest plugin on japanese text](https://github.com/shivstha/elasticsearch-opennlp-ingest-ner-japanese-plugin/blob/ed16b43bae78289b18788c0d2645663fa6a03810/model/japanese-ner-results.png)
+![Output of ingest plugin on japanese text](https://github.com/shivstha/elasticsearch-opennlp-ingest-ner-japanese-plugin/blob/ed16b43bae78289b18788c0d2645663fa6a03810/model/japanese-ner-results.png)
